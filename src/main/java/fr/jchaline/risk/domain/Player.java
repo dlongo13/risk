@@ -22,6 +22,12 @@ public class Player implements Serializable {
 	@Column(nullable = false)
 	private String name;
 	
+
+	public Player(String name) {
+		this.name = name;
+	}
+
+	
 	public Long getId() {
 		return id;
 	}
@@ -37,11 +43,4 @@ public class Player implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	public static Player of(String name) {
-		Player p = new Player();
-		p.setName(name);
-		return p;
-	}
-
 }

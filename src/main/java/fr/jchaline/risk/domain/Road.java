@@ -1,15 +1,34 @@
 package fr.jchaline.risk.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 /**
  * Represent the link between two territories, 
- * an oritented way
+ * an none-oritented way
  * @author jeremy
  *
  */
+@Entity
+@Table(name = "road")
 public class Road {
 	
+	@Id
+	@GeneratedValue
+	@Column(unique = true, nullable = false)
+	private Long id;
+	
+	@Column
 	private int weight;
+	
+	@ManyToOne
 	private Territory from;
+	
+	@ManyToOne
 	private Territory to;
 	
 	

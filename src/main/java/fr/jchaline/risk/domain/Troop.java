@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -18,7 +19,16 @@ public class Troop {
 	@Column(nullable = false)
 	private int level;
 	
+	@ManyToOne
 	private Player player;
+	
+	@ManyToOne
+	private Territory territory;
+	
+	public Troop (Player player, Territory territoy) {
+		this.player = player;
+		this.territory = territoy;
+	}
 
 	public int getLevel() {
 		return level;
@@ -36,11 +46,12 @@ public class Troop {
 		this.player = player;
 	}
 	
-	public static Troop of(Player player, int level) {
-		Troop t = new Troop();
-		t.setPlayer(player);
-		t.setLevel(level);
-		return t;
+	public Territory getTerritory() {
+		return territory;
+	}
+
+	public void setTerritory(Territory territory) {
+		this.territory = territory;
 	}
 
 }

@@ -24,6 +24,9 @@ public class Territory {
 	@Column
 	private int yaxis;
 	
+	public Territory () {
+	}
+	
 	public Territory (String name) {
 		this.name = name;
 	}

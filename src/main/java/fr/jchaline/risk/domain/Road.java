@@ -31,6 +31,9 @@ public class Road {
 	@ManyToOne
 	private Territory to;
 	
+	public Road () {
+	}
+	
 	
 	public Road(Territory from, Territory to) {
 		this.from = from;

@@ -1,7 +1,8 @@
 <!doctype html>
-<html>
+<html ng-app="TerritoryModule">
 <head>
     <title>Territories</title>
+	<meta charset="utf-8" />
 
     <link href="vis/vis.min.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="vis/vis.min.js"></script>
@@ -9,13 +10,13 @@
 
     <style type="text/css">
         #mynetwork {
-            width: 600px;
-            height: 400px;
+            width: 900px;
+            height: 500px;
             border: 1px solid lightgray;
         }
 
         p {
-            max-width:600px;
+            max-width:900px;
         }
 
         h4 {
@@ -24,46 +25,149 @@
     </style>
 </head>
 
-<h4>Territories (use <a target="_blank" href="http://visjs.org">http://visjs.org</a> ):</h4>
+<body ng-controller="territoryController">
 
-<div id="mynetwork"></div>
+	<h4>Territories (use <a target="_blank" href="http://visjs.org">http://visjs.org</a> ):</h4>
 
-<script type="text/javascript">
-    var nodesArray, nodes, edgesArray, edges, network;
+	<div id="mynetwork"></div>
+	
+	<button ng-click="updateTerritories();updateRoads()">refresh</button>
 
-    
-    //replace by ws call to road & territory controllers
-    function startNetwork() {
-        // create an array with nodes
-        nodesArray = [
-            {id: 1, label: 'Node 1'},
-            {id: 2, label: 'Node 2'},
-            {id: 3, label: 'Node 3'},
-            {id: 4, label: 'Node 4'},
-            {id: 5, label: 'Node 5'}
-        ];
-        nodes = new vis.DataSet(nodesArray);
+	<script type="text/javascript">
+		var nodesArray, nodes, edgesArray, edges, network
 
-        // create an array with edges
-        edgesArray = [
-            {from: 1, to: 3},
-            {from: 1, to: 2},
-            {from: 2, to: 4},
-            {from: 2, to: 5}
-        ];
-        edges = new vis.DataSet(edgesArray);
+		function stopNetwork() {
+			if (network !== null) {
+				network.destroy()
+				network = null
+			}
+		}
+		
+		function addNode(nodeId, label) {
+			nodes.add({id:nodeId, label:label})
+		}
+		
+		function addEdge(fromId, toId) {
+			edges.add({from: fromId, to: toId})
+		}
+		
+		//replace by ws call to road & territory controllers
+		function initNetwork() {
+			// create an array with nodes
+			nodesArray = []
+			nodes = new vis.DataSet(nodesArray)
 
-        // create a network
-        var container = document.getElementById('mynetwork');
-        var data = {
-            nodes: nodes,
-            edges: edges
-        };
-        var options = {};
-        network = new vis.Network(container, data, options);
-    }
+			// create an array with edges
+			edgesArray = []
+			edges = new vis.DataSet(edgesArray)
 
-    startNetwork();
-</script>
+			// create a network
+			var container = document.getElementById('mynetwork')
+			var data = {
+				nodes: nodes,
+				edges: edges
+			}
+			var options = {}
+			network = new vis.Network(container, data, options)
+		}
+
+		initNetwork()
+		
+		var app = angular.module( "TerritoryModule", [] )
+		
+		app.controller(
+			"territoryController",
+			function( $scope, territoryService ) {
+				$scope.territories = []
+				
+				$scope.updateTerritories = function() {
+					territoryService.updateTerritories().then(thenDoTerritories)
+				}
+				
+				$scope.updateRoads = function() {
+					territoryService.updateRoads().then(thenDoRoads)
+				}
+				
+				// when request is ok, processing server data
+				function thenDoTerritories(data) {
+					nodes.clear()
+					edges.clear()
+					data.forEach(function(e){
+						addNode(e.id, e.name)
+					})
+				}
+				function thenDoRoads(data) {
+					edges.clear()
+					data.forEach(function(e){
+						addEdge(e.from.id, e.to.id)
+					})
+				}
+			}
+		)
+		app.service(
+			"territoryService",
+			function( $http, $q ) {
+				// Return public API.
+				return({
+					updateTerritories: updateTerritories,
+					updateRoads: updateRoads
+				})
+				
+				function updateTerritories( ) {
+					var request = $http({
+						method: "get",
+						url: "http://localhost:8080/territory/list",
+						params: {
+							//action: "add"
+						},
+						data: {
+							//name: ""
+						}
+					})
+					return( request.then( handleSuccess, handleError ) )
+				}
+				
+				function updateRoads( ) {
+					var request = $http({
+						method: "get",
+						url: "http://localhost:8080/road/list",
+						params: {
+							//action: "add"
+						},
+						data: {
+							//name: ""
+						}
+					})
+					return( request.then( handleSuccess, handleError ) )
+				}
+				
+				// ---
+				// PRIVATE METHODS.
+				// ---
+				// I transform the error response, unwrapping the application dta from
+				// the API response payload.
+				function handleError( response ) {
+					// The API response from the server should be returned in a
+					// nomralized format. However, if the request was not handled by the
+					// server (or what not handles properly - ex. server error), then we
+					// may have to normalize it on our end, as best we can.
+					if (
+						! angular.isObject( response.data ) ||
+						! response.data.message
+					) {
+						return( $q.reject( "An unknown error occurred." ) )
+					}
+						// Otherwise, use expected error message.
+						return( $q.reject( response.data.message ) )
+				}
+				
+				// I transform the successful response, unwrapping the application data
+				// from the API response payload.
+				function handleSuccess( response ) {
+					return( response.data )
+				}
+			}
+		)
+	</script>
 </body>
 </html>

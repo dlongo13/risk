@@ -75,6 +75,16 @@ public class Road {
 	public void setWeight(int weight) {
 		this.weight = weight;
 	}
+
+
+	public Long getId() {
+		return id;
+	}
+
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 	
 	
 
